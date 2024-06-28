@@ -34,10 +34,12 @@ form {
     margin-bottom: 15px;
     display: flex;
     flex-wrap: wrap;
+    align-items: center; /* Align items vertically center */
+    gap: 20px; /* Add some space between the fields */
 }
 
 label {
-    flex: 0 0 150px;
+    flex: 0 0 150px; /* Fixed width for labels */
     margin-right: 10px;
 }
 
@@ -98,8 +100,7 @@ button:hover {
 
 .table-container {
     display: flex;
-    flex-direction: column; /* Adjusted for column layout */
-    gap: 20px;
+    gap: 20px; /* Add some space between the tables */
 }
 
 .table-container > div {
@@ -231,10 +232,11 @@ document.addEventListener('DOMContentLoaded', function() {
         firstTableBody.appendChild(row);
     });
 
-    form.addEventListener('input', function() {
+    // Add event listener for the first table to calculate overall performance
+    firstTableBody.addEventListener('input', function() {
         let totalScore = 0;
         let count = 0;
-        form.querySelectorAll('input[type="number"]').forEach(input => {
+        firstTableBody.querySelectorAll('input[type="number"]').forEach(input => {
             if (input.value !== "") {
                 totalScore += parseInt(input.value);
                 count++;
@@ -279,10 +281,11 @@ document.addEventListener('DOMContentLoaded', function() {
         secondTableBody.appendChild(row);
     });
 
-    form.addEventListener('input', function() {
+    // Add event listener for the second table to calculate overall performance
+    secondTableBody.addEventListener('input', function() {
         let totalScore2 = 0;
         let count2 = 0;
-        form.querySelectorAll('input[name^="score2"]').forEach(input => {
+        secondTableBody.querySelectorAll('input[type="number"]').forEach(input => {
             if (input.value !== "") {
                 totalScore2 += parseInt(input.value);
                 count2++;
