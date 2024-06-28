@@ -22,7 +22,7 @@
 }
 
 form {
-    max-width: calc(100% - 40px);
+    max-width: calc(100% - 40px); /* Adjusted to leave minimal space from edges */
     margin: 20px auto;
     background: white;
     padding: 20px;
@@ -33,16 +33,12 @@ form {
 .form-group {
     margin-bottom: 15px;
     display: flex;
-    justify-content: space-between;
     flex-wrap: wrap;
-    align-items: center; /* Added to center labels with fields */
 }
 
 label {
     flex: 0 0 150px;
     margin-right: 10px;
-    display: flex;
-    align-items: center; /* Added to center labels vertically */
 }
 
 input[type="text"], input[type="date"], input[type="time"], select, textarea {
@@ -102,7 +98,7 @@ button:hover {
 
 .table-container {
     display: flex;
-    flex-direction: row;
+    flex-direction: column; /* Adjusted for column layout */
     gap: 20px;
 }
 
@@ -146,7 +142,7 @@ button:hover {
                             <th>Sr. No.</th>
                             <th>Task Timings</th>
                             <th>Description</th>
-                            <th>QC Remark's</th>
+                            <th>QC Remark's</th> <!-- Updated Header -->
                             <th>QC Comment's</th>
                             <th>Score (0-10)</th>
                         </tr>
@@ -269,10 +265,16 @@ document.addEventListener('DOMContentLoaded', function() {
         row.innerHTML = `
             <td>${index + 1}</td>
             <td>${task}</td>
-            <td><textarea name="studentResponse${index + 1}"></textarea></td>
-            <td><textarea name="studentComments${index + 1}"></textarea></td>
-            <td>00:00</td>
-            <td><input type="number" name="studentScore${index + 1}" min="0" max="10" step="1" required></td>
+            <td>
+                <select name="studentResponse${index + 1}">
+                    <option value="Good">Good</option>
+                    <option value="Average">Average</option>
+                    <option value="Poor">Poor</option>
+                </select>
+            </td>
+            <td><textarea name="comments${index + 1}"></textarea></td>
+            <td><textarea name="timestamp${index + 1}"></textarea></td>
+            <td><input type="number" name="score2${index + 1}" min="0" max="10" step="1" required></td>
         `;
         secondTableBody.appendChild(row);
     });
@@ -280,8 +282,8 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('input', function() {
         let totalScore2 = 0;
         let count2 = 0;
-        form.querySelectorAll('input[type="number"]').forEach(input => {
-            if (input.name.startsWith('studentScore') && input.value !== "") {
+        form.querySelectorAll('input[name^="score2"]').forEach(input => {
+            if (input.value !== "") {
                 totalScore2 += parseInt(input.value);
                 count2++;
             }
@@ -293,30 +295,81 @@ document.addEventListener('DOMContentLoaded', function() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
-        doc.text("Quality and Error Checks for Credibility Interviewers", 10, 10);
-        doc.text("Developed By Shakil Sayed", 10, 20);
+        // Header
+        const pageWidth = doc.internal.pageSize.getWidth();
+        doc.setFillColor(200, 200, 255); // light blue background
+        doc.rect(0, 0, pageWidth, 30, 'F');
+
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(0, 0, 128); // dark blue text
+        doc.text('Quality and Error Checks for Credibility Interviewers', pageWidth / 2, 15, { align: 'center' });
+
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(0, 0, 0); // black text
+        doc.text('Developed By Shakil Sayed', pageWidth / 2, 25, { align: 'center' });
+
+        const interviewDate = form.interviewDate.value;
+        const interviewTime = form.interviewTime.value;
+        const qcDate = form.qcDate.value;
+        const qcOfficer = form.qcOfficer.value;
+        const studentName = form.studentName.value;
+        const studentID = form.studentID.value;
+        const overallPerformance = overallPerformanceInput.value;
+        const overallPerformance2 = overallPerformanceInput2.value;
+
+        const infoRows = [
+            ['Interview Date:', interviewDate],
+            ['Interview Time:', interviewTime],
+            ['QC Date:', qcDate],
+            ['QC Officer:', qcOfficer],
+            ['Student Name:', studentName],
+            ['Student ID:', studentID]
+        ];
 
         doc.autoTable({
-            html: '#firstTable',
-            startY: 30,
-            theme: 'grid',
-            headStyles: { fillColor: [41, 128, 185] },
-            styles: { cellPadding: 3 },
-            columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 30 }, 2: { cellWidth: 50 }, 3: { cellWidth: 20 }, 4: { cellWidth: 40 }, 5: { cellWidth: 20 } }
+            head: [['Assessment Log', 'Input']],
+            body: infoRows,
+            startY: 40
+        });
+
+        const rows = [];
+        tasks.forEach((task, index) => {
+            const qcRemarks = form[`qcRemarks${index + 1}`].value;
+            const qcComments = form[`qcComments${index + 1}`].value;
+            const score = form[`score${index + 1}`].value;
+            rows.push([index + 1, 'During Interview', task, qcRemarks, qcComments, score]);
         });
 
         doc.autoTable({
-            html: '#secondTable',
-            startY: doc.previousAutoTable.finalY + 10,
-            theme: 'grid',
-            headStyles: { fillColor: [41, 128, 185] },
-            styles: { cellPadding: 3 },
-            columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 60 }, 2: { cellWidth: 40 }, 3: { cellWidth: 40 }, 4: { cellWidth: 20 }, 5: { cellWidth: 20 } }
+            head: [['Sr. No.', 'Task Timings', 'Description', "QC Remark's", "QC Comment's", 'Score']],
+            body: rows,
+            startY: doc.lastAutoTable.finalY + 10
         });
 
-        doc.save('quality_checks.pdf');
+        doc.text(`Overall Performance: ${overallPerformance}`, 10, doc.lastAutoTable.finalY + 20);
+
+        const secondRows = [];
+        secondTasks.forEach((task, index) => {
+            const studentResponse = form[`studentResponse${index + 1}`].value;
+            const comments = form[`comments${index + 1}`].value;
+            const timestamp = form[`timestamp${index + 1}`].value;
+            const score2 = form[`score2${index + 1}`].value;
+            secondRows.push([index + 1, task, studentResponse, comments, timestamp, score2]);
+        });
+
+        doc.autoTable({
+            head: [['Sr. No.', 'Description', 'Student Response', 'Comments', 'Time Stamp', 'Score']],
+            body: secondRows,
+            startY: doc.lastAutoTable.finalY + 30
+        });
+
+        doc.text(`Overall Performance: ${overallPerformance2}`, 10, doc.lastAutoTable.finalY + 20);
+
+        doc.save('Interview_QC_Report.pdf');
     });
 });
-    </script>
+  </script>
 </body>
 </html>
