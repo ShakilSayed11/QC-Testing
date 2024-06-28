@@ -146,11 +146,11 @@ button:hover {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
     <script src="script.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('qcForm');
     const tableBody = form.querySelector('tbody');
     const savePDFButton = document.getElementById('savePDF');
-    const overallPerformance = document.getElementById('overallPerformance');
+    const overallPerformanceInput = document.getElementById('overallPerformance');
     
     const tasks = [
         "Proper Recording is done with clear facial visibility",
@@ -198,7 +198,7 @@ button:hover {
                 count++;
             }
         });
-        overallPerformance.value = count ? (totalScore / count).toFixed(2) : '';
+        overallPerformanceInput.value = count ? (totalScore / count).toFixed(2) : '';
     });
 
     savePDFButton.addEventListener('click', function() {
@@ -206,25 +206,26 @@ button:hover {
         const doc = new jsPDF();
 
         // Header
+        const pageWidth = doc.internal.pageSize.getWidth();
         doc.setFillColor(200, 200, 255); // light blue background
-        doc.rect(0, 0, doc.internal.pageSize.width, 30, 'F');
+        doc.rect(0, 0, pageWidth, 30, 'F');
 
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(0, 0, 128); // dark blue text
-        doc.text('Quality and Error Checks for Credibility Interviewers', 10, 20);
+        doc.text('Quality and Error Checks for Credibility Interviewers', pageWidth / 2, 15, { align: 'center' });
 
         doc.setFontSize(14);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(0, 0, 0); // black text
-        doc.text('Developed By Shakil Sayed', 10, 30);
+        doc.text('Developed By Shakil Sayed', pageWidth / 2, 25, { align: 'center' });
 
         const interviewDate = form.interviewDate.value;
         const qcDate = form.qcDate.value;
         const qcOfficer = form.qcOfficer.value;
         const studentName = form.studentName.value;
         const studentID = form.studentID.value;
-        const overallPerformance = form.overallPerformance.value;
+        const overallPerformance = overallPerformanceInput.value;
 
         const infoRows = [
             ['Interview Date:', interviewDate],
@@ -235,7 +236,7 @@ button:hover {
         ];
 
         doc.autoTable({
-            head: [['Field', 'Value']],
+            head: [['Assessment Log', 'Input']],
             body: infoRows,
             startY: 40
         });
