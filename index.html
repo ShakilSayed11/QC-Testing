@@ -22,7 +22,7 @@
 }
 
 form {
-    max-width: 800px;
+    max-width: calc(100% - 40px);
     margin: 20px auto;
     background: white;
     padding: 20px;
@@ -32,19 +32,26 @@ form {
 
 .form-group {
     margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: center; /* Added to center labels with fields */
 }
 
 label {
-    display: inline-block;
-    width: 150px;
+    flex: 0 0 150px;
+    margin-right: 10px;
+    display: flex;
+    align-items: center; /* Added to center labels vertically */
 }
 
-input[type="text"], input[type="date"], select, textarea {
-    width: calc(100% - 160px);
+input[type="text"], input[type="date"], input[type="time"], select, textarea {
+    flex: 1;
     box-sizing: border-box;
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    margin-bottom: 10px;
 }
 
 table {
@@ -92,6 +99,16 @@ button {
 button:hover {
     background-color: #45a049;
 }
+
+.table-container {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.table-container > div {
+    flex: 1;
+}
 </style>
 <body>
     <div class="header">
@@ -102,55 +119,84 @@ button:hover {
         <div class="form-group">
             <label for="interviewDate">Interview Date:</label>
             <input type="date" id="interviewDate" name="interviewDate" required>
-        </div>
-        <div class="form-group">
+            
+            <label for="interviewTime">Interview Time:</label>
+            <input type="time" id="interviewTime" name="interviewTime" required>
+            
             <label for="qcDate">QC Date:</label>
             <input type="date" id="qcDate" name="qcDate" required>
         </div>
         <div class="form-group">
             <label for="qcOfficer">QC Officer:</label>
             <input type="text" id="qcOfficer" name="qcOfficer" required>
-        </div>
-        <div class="form-group">
+            
             <label for="studentName">Student Name:</label>
             <input type="text" id="studentName" name="studentName" required>
-        </div>
-        <div class="form-group">
+            
             <label for="studentID">Student ID:</label>
             <input type="text" id="studentID" name="studentID" required>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Sr. No.</th>
-                    <th>Task Timings</th>
-                    <th>Description</th>
-                    <th>QC Remark's (Good, Average, Poor)</th>
-                    <th>QC Comment's</th>
-                    <th>Score (0-10)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- The rows will be inserted here by JavaScript -->
-            </tbody>
-        </table>
-        <div class="form-group">
-            <label for="overallPerformance">Overall Performance:</label>
-            <input type="text" id="overallPerformance" name="overallPerformance" readonly>
+        <div class="table-container">
+            <div>
+                <h2>QC Assessment</h2>
+                <table id="firstTable">
+                    <thead>
+                        <tr>
+                            <th>Sr. No.</th>
+                            <th>Task Timings</th>
+                            <th>Description</th>
+                            <th>QC Remark's</th>
+                            <th>QC Comment's</th>
+                            <th>Score (0-10)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- The rows will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+                <div class="form-group">
+                    <label for="overallPerformance">Overall Performance:</label>
+                    <input type="text" id="overallPerformance" name="overallPerformance" readonly>
+                </div>
+            </div>
+            <div>
+                <h2>Student Performance Assessment</h2>
+                <table id="secondTable">
+                    <thead>
+                        <tr>
+                            <th>Sr. No.</th>
+                            <th>Description</th>
+                            <th>Student Response</th>
+                            <th>Comments</th>
+                            <th>Time Stamp</th>
+                            <th>Score (0-10)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- The rows will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+                <div class="form-group">
+                    <label for="overallPerformance2">Overall Performance:</label>
+                    <input type="text" id="overallPerformance2" name="overallPerformance2" readonly>
+                </div>
+            </div>
         </div>
+        
         <button type="button" id="savePDF">Save as PDF</button>
     </form>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
-    <script src="script.js"></script>
-  <script>
+    <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('qcForm');
-    const tableBody = form.querySelector('tbody');
+    const firstTableBody = document.getElementById('firstTable').querySelector('tbody');
+    const secondTableBody = document.getElementById('secondTable').querySelector('tbody');
     const savePDFButton = document.getElementById('savePDF');
     const overallPerformanceInput = document.getElementById('overallPerformance');
+    const overallPerformanceInput2 = document.getElementById('overallPerformance2');
     
     const tasks = [
         "Proper Recording is done with clear facial visibility",
@@ -186,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <td><textarea name="qcComments${index + 1}"></textarea></td>
             <td><input type="number" name="score${index + 1}" min="0" max="10" step="1" required></td>
         `;
-        tableBody.appendChild(row);
+        firstTableBody.appendChild(row);
     });
 
     form.addEventListener('input', function() {
@@ -201,65 +247,76 @@ document.addEventListener('DOMContentLoaded', function() {
         overallPerformanceInput.value = count ? (totalScore / count).toFixed(2) : '';
     });
 
+    const secondTasks = [
+        "Body Language and Attitude of student",
+        "Passport and Facial Verification",
+        "Answered (Visa Refusals / Travel History)",
+        "English Communication Skills",
+        "Other Countries Comparision",
+        "Why UK",
+        "Why not Home country",
+        "Why this University",
+        "Other UK Universities Comparision",
+        "Previous Qualifications / Experience",
+        "Why this Course Answered",
+        "Course Modules explained",
+        "Future Plans / Goals Answered",
+        "Finances (More than Total Fees + Living Cost of total study period) Explained"
+    ];
+
+    secondTasks.forEach((task, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${task}</td>
+            <td><textarea name="studentResponse${index + 1}"></textarea></td>
+            <td><textarea name="studentComments${index + 1}"></textarea></td>
+            <td>00:00</td>
+            <td><input type="number" name="studentScore${index + 1}" min="0" max="10" step="1" required></td>
+        `;
+        secondTableBody.appendChild(row);
+    });
+
+    form.addEventListener('input', function() {
+        let totalScore2 = 0;
+        let count2 = 0;
+        form.querySelectorAll('input[type="number"]').forEach(input => {
+            if (input.name.startsWith('studentScore') && input.value !== "") {
+                totalScore2 += parseInt(input.value);
+                count2++;
+            }
+        });
+        overallPerformanceInput2.value = count2 ? (totalScore2 / count2).toFixed(2) : '';
+    });
+
     savePDFButton.addEventListener('click', function() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
-        // Header
-        const pageWidth = doc.internal.pageSize.getWidth();
-        doc.setFillColor(200, 200, 255); // light blue background
-        doc.rect(0, 0, pageWidth, 30, 'F');
-
-        doc.setFontSize(18);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(0, 0, 128); // dark blue text
-        doc.text('Quality and Error Checks for Credibility Interviewers', pageWidth / 2, 15, { align: 'center' });
-
-        doc.setFontSize(14);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(0, 0, 0); // black text
-        doc.text('Developed By Shakil Sayed', pageWidth / 2, 25, { align: 'center' });
-
-        const interviewDate = form.interviewDate.value;
-        const qcDate = form.qcDate.value;
-        const qcOfficer = form.qcOfficer.value;
-        const studentName = form.studentName.value;
-        const studentID = form.studentID.value;
-        const overallPerformance = overallPerformanceInput.value;
-
-        const infoRows = [
-            ['Interview Date:', interviewDate],
-            ['QC Date:', qcDate],
-            ['QC Officer:', qcOfficer],
-            ['Student Name:', studentName],
-            ['Student ID:', studentID]
-        ];
+        doc.text("Quality and Error Checks for Credibility Interviewers", 10, 10);
+        doc.text("Developed By Shakil Sayed", 10, 20);
 
         doc.autoTable({
-            head: [['Assessment Log', 'Input']],
-            body: infoRows,
-            startY: 40
-        });
-
-        const rows = [];
-        tasks.forEach((task, index) => {
-            const qcRemarks = form[`qcRemarks${index + 1}`].value;
-            const qcComments = form[`qcComments${index + 1}`].value;
-            const score = form[`score${index + 1}`].value;
-            rows.push([index + 1, 'During Interview', task, qcRemarks, qcComments, score]);
+            html: '#firstTable',
+            startY: 30,
+            theme: 'grid',
+            headStyles: { fillColor: [41, 128, 185] },
+            styles: { cellPadding: 3 },
+            columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 30 }, 2: { cellWidth: 50 }, 3: { cellWidth: 20 }, 4: { cellWidth: 40 }, 5: { cellWidth: 20 } }
         });
 
         doc.autoTable({
-            head: [['Sr. No.', 'Task Timings', 'Description', "QC Remark's", "QC Comment's", 'Score']],
-            body: rows,
-            startY: doc.lastAutoTable.finalY + 10
+            html: '#secondTable',
+            startY: doc.previousAutoTable.finalY + 10,
+            theme: 'grid',
+            headStyles: { fillColor: [41, 128, 185] },
+            styles: { cellPadding: 3 },
+            columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 60 }, 2: { cellWidth: 40 }, 3: { cellWidth: 40 }, 4: { cellWidth: 20 }, 5: { cellWidth: 20 } }
         });
 
-        doc.text(`Overall Performance: ${overallPerformance}`, 10, doc.lastAutoTable.finalY + 20);
-
-        doc.save('Interview_QC_Report.pdf');
+        doc.save('quality_checks.pdf');
     });
 });
-  </script>
+    </script>
 </body>
 </html>
