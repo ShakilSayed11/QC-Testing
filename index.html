@@ -27,7 +27,7 @@
 </head>
 <body>
   <h1>Quality and Error Checks for Credibility Interviewers</h1>
-  <form id="qcForm" action="generate_pdf.php" method="post">
+  <form id="qcForm">
     <table>
       <thead>
         <tr>
@@ -39,13 +39,14 @@
           <th>Score (0-10)</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="tableBody">
         <!-- Rows dynamically generated using JavaScript -->
       </tbody>
     </table>
-    <button type="submit">Generate PDF</button>
+    <button type="button" onclick="generatePDF()">Generate PDF</button>
   </form>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
   <script>
     // Function to dynamically generate table rows
     function generateRows() {
@@ -55,7 +56,7 @@
         // Add more tasks as needed
       ];
 
-      const tbody = document.querySelector('tbody');
+      const tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
 
       tasks.forEach((task, index) => {
@@ -77,6 +78,41 @@
         `;
         tbody.innerHTML += row;
       });
+    }
+
+    // Function to generate PDF using jsPDF
+    function generatePDF() {
+      // Initialize jsPDF
+      const doc = new jsPDF();
+
+      // Set document properties
+      doc.setFontSize(18);
+      doc.text('Quality and Error Checks for Credibility Interviewers', 14, 22);
+
+      // Get table data
+      const table = document.getElementById('qcForm');
+      const rows = table.querySelectorAll('tbody tr');
+
+      let y = 30;
+      rows.forEach((row, index) => {
+        const cells = row.getElementsByTagName('td');
+        const rowData = [
+          cells[0].innerText, // Sr. No.
+          cells[1].innerText, // Task Timings
+          cells[2].innerText, // Description
+          cells[3].querySelector('select').value, // QC Remarks
+          cells[4].querySelector('textarea').value, // QC Comments
+          cells[5].querySelector('input').value // Score (0-10)
+        ];
+
+        // Add row data to PDF
+        doc.setFontSize(12);
+        doc.text(14, y, rowData.join(' | '));
+        y += 10;
+      });
+
+      // Save the PDF
+      doc.save('quality_checks.pdf');
     }
 
     // Call generateRows on page load
