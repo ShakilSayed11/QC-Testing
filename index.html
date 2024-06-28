@@ -342,6 +342,8 @@ document.addEventListener('DOMContentLoaded', function() {
             startY: 40
         });
 
+        doc.text('QC Assessment', 10, doc.lastAutoTable.finalY + 20);  // Add the table name
+
         const rows = [];
         tasks.forEach((task, index) => {
             const qcRemarks = form[`qcRemarks${index + 1}`].value;
@@ -353,10 +355,13 @@ document.addEventListener('DOMContentLoaded', function() {
         doc.autoTable({
             head: [['Sr. No.', 'Task Timings', 'Description', "QC Remark's", "QC Comment's", 'Score']],
             body: rows,
-            startY: doc.lastAutoTable.finalY + 10
+            startY: doc.lastAutoTable.finalY + 30
         });
 
         doc.text(`Overall Performance: ${overallPerformance}`, 10, doc.lastAutoTable.finalY + 20);
+
+        doc.addPage();  // Add a new page for the second table
+        doc.text('Student Performance Assessment', 10, 10);  // Add the table name
 
         const secondRows = [];
         secondTasks.forEach((task, index) => {
@@ -370,7 +375,7 @@ document.addEventListener('DOMContentLoaded', function() {
         doc.autoTable({
             head: [['Sr. No.', 'Description', 'Student Response', 'Comments', 'Time Stamp', 'Score']],
             body: secondRows,
-            startY: doc.lastAutoTable.finalY + 30
+            startY: 20  // Start at 20 to provide some space below the header
         });
 
         doc.text(`Overall Performance: ${overallPerformance2}`, 10, doc.lastAutoTable.finalY + 20);
