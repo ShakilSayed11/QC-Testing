@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quality and Error Checks Form</title>
+<style>
+  /* Style your form as needed */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  th, td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+  }
+  th {
+    background-color: #f2f2f2;
+  }
+  textarea {
+    width: 100%;
+    resize: vertical;
+  }
+</style>
+</head>
+<body>
+  <h1>Quality and Error Checks for Credibility Interviewers</h1>
+  <form id="qcForm" action="generate_pdf.php" method="post">
+    <table>
+      <thead>
+        <tr>
+          <th>Sr. No.</th>
+          <th>Task Timings</th>
+          <th>Description</th>
+          <th>QC Remarks</th>
+          <th>QC Comments</th>
+          <th>Score (0-10)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows dynamically generated using JavaScript -->
+      </tbody>
+    </table>
+    <button type="submit">Generate PDF</button>
+  </form>
+
+  <script>
+    // Function to dynamically generate table rows
+    function generateRows() {
+      const tasks = [
+        { task: 'During Interview', description: 'Proper Recording is done with clear facial visibility' },
+        { task: 'During Interview', description: 'Proper self-introduction' },
+        // Add more tasks as needed
+      ];
+
+      const tbody = document.querySelector('tbody');
+      tbody.innerHTML = '';
+
+      tasks.forEach((task, index) => {
+        const row = `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${task.task}</td>
+            <td>${task.description}</td>
+            <td>
+              <select name="qcRemarks${index}">
+                <option value="Good">Good</option>
+                <option value="Average">Average</option>
+                <option value="Poor">Poor</option>
+              </select>
+            </td>
+            <td><textarea name="qcComments${index}" rows="2"></textarea></td>
+            <td><input type="number" name="score${index}" min="0" max="10" step="1"></td>
+          </tr>
+        `;
+        tbody.innerHTML += row;
+      });
+    }
+
+    // Call generateRows on page load
+    window.onload = generateRows;
+  </script>
+</body>
+</html>
