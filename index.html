@@ -46,7 +46,7 @@
     <button type="button" onclick="generatePDF()">Generate PDF</button>
   </form>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@3.21.0/dist/pdf-lib.min.js"></script>
   <script>
     // Function to dynamically generate table rows
     function generateRows() {
@@ -80,43 +80,80 @@
       });
     }
 
-    // Function to generate PDF using jsPDF
-    function generatePDF() {
-      // Initialize jsPDF
-      const doc = new jsPDF();
+    // Function to generate PDF using pdf-lib
+    async function generatePDF() {
+      // Initialize PDF document
+      const { PDFDocument, rgb } = PDFLib;
+      const pdfDoc = await PDFDocument.create();
+      const page = pdfDoc.addPage();
 
-      // Set document properties
-      doc.setFontSize(18);
-      doc.text('Quality and Error Checks for Credibility Interviewers', 14, 22);
+      // Set font and size
+      const helveticaFont = await pdfDoc.embedFont(PDFDocument.Font.Helvetica);
+
+      // Position variables
+      let x = 50;
+      let y = page.getHeight() - 50;
+
+      // Add title
+      page.drawText('Quality and Error Checks for Credibility Interviewers', {
+        x: 50,
+        y,
+        size: 24,
+        font: helveticaFont,
+        color: rgb(0, 0, 0),
+      });
+      y -= 30;
 
       // Get table data
       const table = document.getElementById('qcForm');
       const rows = table.querySelectorAll('tbody tr');
 
-      let y = 30;
-      rows.forEach((row, index) => {
-        const cells = row.getElementsByTagName('td');
-        const rowData = [
-          cells[0].innerText, // Sr. No.
-          cells[1].innerText, // Task Timings
-          cells[2].innerText, // Description
-          cells[3].querySelector('select').value, // QC Remarks
-          cells[4].querySelector('textarea').value, // QC Comments
-          cells[5].querySelector('input').value // Score (0-10)
-        ];
+      // Draw table headers
+      const headers = ['Sr. No.', 'Task Timings', 'Description', 'QC Remarks', 'QC Comments', 'Score (0-10)'];
+      const columnWidths = [50, 100, 150, 100, 150, 100];
+      headers.forEach((header, index) => {
+        page.drawText(header, {
+          x: x,
+          y,
+          size: 12,
+          font: helveticaFont,
+          color: rgb(0, 0, 0),
+        });
+        x += columnWidths[index];
+      });
+      y -= 20;
 
-        // Add row data to PDF
-        doc.setFontSize(12);
-        doc.text(14, y, rowData.join(' | '));
-        y += 10;
+      // Draw table rows
+      rows.forEach((row, rowIndex) => {
+        const cells = row.getElementsByTagName('td');
+        x = 50;
+        y -= 20;
+
+        cells.forEach((cell, cellIndex) => {
+          page.drawText(cell.innerText, {
+            x: x,
+            y,
+            size: 12,
+            font: helveticaFont,
+            color: rgb(0, 0, 0),
+          });
+          x += columnWidths[cellIndex];
+        });
       });
 
-      // Save the PDF
-      doc.save('quality_checks.pdf');
+      // Save PDF
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = 'quality_checks.pdf';
+      link.click();
     }
 
     // Call generateRows on page load
-    window.onload = generateRows;
+    window.onload = () => {
+      generateRows();
+    };
   </script>
 </body>
 </html>
