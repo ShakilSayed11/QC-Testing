@@ -132,6 +132,9 @@ button:hover {
             
             <label for="studentID">Student ID:</label>
             <input type="text" id="studentID" name="studentID" required>
+
+            <label for="interviewerName">Interviewer Name:</label>
+            <input type="text" id="interviewerName" name="interviewerName" required>
         </div>
 
         <div class="table-container">
@@ -319,6 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const qcOfficer = form.qcOfficer.value;
         const studentName = form.studentName.value;
         const studentID = form.studentID.value;
+        const interviewerName = form.interviewerName.value;
         const overallPerformance = overallPerformanceInput.value;
         const overallPerformance2 = overallPerformanceInput2.value;
 
@@ -328,7 +332,8 @@ document.addEventListener('DOMContentLoaded', function() {
             ['QC Date:', qcDate],
             ['QC Officer:', qcOfficer],
             ['Student Name:', studentName],
-            ['Student ID:', studentID]
+            ['Student ID:', studentID],
+            ['Interviewer Name:', interviewerName]
         ];
 
         doc.autoTable({
@@ -370,7 +375,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         doc.text(`Overall Performance: ${overallPerformance2}`, 10, doc.lastAutoTable.finalY + 20);
 
-        doc.save('Interview_QC_Report.pdf');
+        const fileName = `${qcDate} ${studentName} - ${studentID} - ${interviewerName}.pdf`;
+        doc.save(fileName);
     });
 });
   </script>
