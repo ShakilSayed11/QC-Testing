@@ -213,6 +213,8 @@ document.addEventListener('DOMContentLoaded', function() {
         "Assessment Done properly",
         "Updation (Tracker / Cas Shield / IQ / T-drive / SharePoint)",
         "Feedback shared with Student / Agent.",
+        "All relevant questions covered (Personal Circumstances)",
+        "All relevant questions covered (Medical conditions)",
         "Overall Performance of the Interviewer"
     ];
 
@@ -326,6 +328,20 @@ document.addEventListener('DOMContentLoaded', function() {
         const overallPerformance = overallPerformanceInput.value;
         const overallPerformance2 = overallPerformanceInput2.value;
 
+        // Get current date and time
+        const now = new Date();
+        const formattedDate = now.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        }).replace(/ /g, ' - ');
+        const formattedTime = now.toLocaleTimeString('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+        const timestamp = `${formattedDate} / ${formattedTime}`;
+
         const infoRows = [
             ['Interview Date:', interviewDate],
             ['Interview Time:', interviewTime],
@@ -333,12 +349,13 @@ document.addEventListener('DOMContentLoaded', function() {
             ['QC Officer:', qcOfficer],
             ['Student Name:', studentName],
             ['Student ID:', studentID],
-            ['Interviewer Name:', interviewerName]
+            ['Interviewer Name:', interviewerName],
+            ['Timestamp:', timestamp]
         ];
 
         doc.autoTable({
             head: [['Assessment Log', 'Input']],
-            body: infoRows,
+            body: infoRows.map(([label, value]) => [label, { content: value, styles: { fontStyle: label === 'Timestamp:' ? 'bold' : 'normal' } }]),
             startY: 40
         });
 
